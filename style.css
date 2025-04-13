@@ -2,9 +2,9 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Segoe UI', sans-serif;
-  color: #333;
+  color: #111;
   text-align: center;
-  transition: background 1s ease;
+  transition: background 1s ease, color 1s ease;
 }
 
 body.morning {
@@ -21,7 +21,7 @@ body.evening {
 
 body.night {
   background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
-  color: #ddd;
+  color: #f0f0f0;
 }
 
 .container {
@@ -46,6 +46,7 @@ footer {
   flex-wrap: wrap;
   justify-content: center;
   gap: 1rem;
+  animation: fadeIn 1s ease-in-out;
 }
 
 .card {
@@ -75,24 +76,26 @@ footer {
 
 .label {
   font-size: 1rem;
-  color: #444;
+  color: #222;
 }
 
 canvas {
   margin-top: 2rem;
-  max-width: 900px;
+  max-width: 95vw;
   width: 100%;
+  height: 350px !important;
+  animation: fadeInUp 1s ease-out;
 }
 
 /* Hava durumu ikonları */
 .icon {
   position: absolute;
-  top: -10px;
-  right: -10px;
-  font-size: 1.5rem;
+  top: 10px;
+  right: 10px;
+  font-size: 2rem;
 }
 
-
+/* Mobil uyum */
 @media screen and (max-width: 600px) {
   .cards {
     flex-direction: column;
@@ -109,9 +112,13 @@ canvas {
   }
 }
 
-.card .icon {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 2rem;
+/* Animasyonlar */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
