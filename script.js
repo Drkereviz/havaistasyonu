@@ -14,7 +14,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const dataRef = ref(db, "/data");
+const dataRef = ref(db, "/hava");
 
 const chartConfig = (label, borderColor, bgColor) => ({
   label,
@@ -62,10 +62,10 @@ onValue(dataRef, (snapshot) => {
 
   const last = recent[recent.length - 1];
 
-  updateAnimatedValue("temp", last.temperature + " °C");
-  updateAnimatedValue("hum", last.humidity + " %");
-  updateAnimatedValue("pres", last.pressure + " hPa");
-  updateAnimatedValue("yorum", last.yorum ?? "-");
+  updateAnimatedValue("temp", rawData.sicaklik + " °C");
+  updateAnimatedValue("hum", rawData.nem + " %");
+  updateAnimatedValue("pres", rawData.basinc + " hPa");
+  updateAnimatedValue("yorum", rawData.yorum ?? "-");
 
   chartData.labels = recent.map(d => new Date(d.timestamp).toLocaleTimeString());
   chartData.datasets[0].data = recent.map(d => d.temperature);
