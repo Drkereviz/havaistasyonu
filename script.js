@@ -15,29 +15,40 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const dataRef = ref(db, "/data");
 
-const tempData = {
+const chartConfig = (label, borderColor, bgColor) => ({
+  label,
+  data: [],
+  fill: true,
+  borderColor,
+  backgroundColor: bgColor,
+  tension: 0.3
+});
+
+const chartData = {
   labels: [],
-  datasets: [{
-    label: "Sıcaklık (°C)",
-    data: [],
-    fill: true,
-    borderColor: "#ff5722",
-    backgroundColor: "rgba(255,87,34,0.1)",
-    tension: 0.3
-  }]
+  datasets: [
+    chartConfig("Sıcaklık (°C)", "#ff5722", "rgba(255,87,34,0.1)"),
+    chartConfig("Nem (%)", "#2196f3", "rgba(33,150,243,0.1)"),
+    chartConfig("Basınç (hPa)", "#4caf50", "rgba(76,175,80,0.1)")
+  ]
 };
 
-const tempChart = new Chart(document.getElementById("tempChart"), {
-  type: "line",
-  data: tempData,
-  options: {
-    responsive: true,
-    animation: false,
-    scales: {
-      x: { display: true },
-      y: { beginAtZero: true }
-    }
+const chartOptions = {
+  responsive: true,
+  animation: {
+    duration: 1000,
+    easing: "easeOutBounce"
+  },
+  scales: {
+    x: { display: true },
+    y: { beginAtZero: false }
   }
+};
+
+const chart = new Chart(document.getElementById("tempChart"), {
+  type: "line",
+  data: chartData,
+  options: chartOptions
 });
 
 onValue(dataRef, (snapshot) => {
@@ -46,7 +57,7 @@ onValue(dataRef, (snapshot) => {
 
   const parsed = Object.entries(rawData).map(([key, value]) => value);
   parsed.sort((a, b) => a.timestamp - b.timestamp);
-  const recent = parsed.slice(-12);  // son 12 veri
+  const recent = parsed.slice(-50);  // son 50 veri
 
   const last = recent[recent.length - 1];
 
@@ -55,9 +66,11 @@ onValue(dataRef, (snapshot) => {
   updateAnimatedValue("pres", last.pressure + " hPa");
   updateAnimatedValue("yorum", last.yorum ?? "-");
 
-  tempData.labels = recent.map(d => new Date(d.timestamp).toLocaleTimeString());
-  tempData.datasets[0].data = recent.map(d => d.temperature);
-  tempChart.update();
+  chartData.labels = recent.map(d => new Date(d.timestamp).toLocaleTimeString());
+  chartData.datasets[0].data = recent.map(d => d.temperature);
+  chartData.datasets[1].data = recent.map(d => d.humidity);
+  chartData.datasets[2].data = recent.map(d => d.pressure);
+  chart.update();
 });
 
 function updateAnimatedValue(id, value) {
