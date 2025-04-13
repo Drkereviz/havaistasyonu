@@ -2,84 +2,26 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ESP32 Hava Durumu Paneli</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f4f8;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
-    }
-    h1 {
-      color: #0066cc;
-    }
-    .card {
-      background: #fff;
-      border-radius: 1rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      padding: 2rem;
-      margin: 1rem;
-      min-width: 300px;
-      text-align: center;
-      transition: 0.3s ease;
-    }
-    .value {
-      font-size: 2rem;
-      font-weight: bold;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: all 0.4s ease;
-    }
-    .value.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .label {
-      font-size: 1rem;
-      color: #666;
-    }
-    .grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1rem;
-    }
-    canvas {
-      margin-top: 2rem;
-      max-width: 600px;
-      width: 100%;
-    }
-  </style>
-</head>
-<body>
-  <h1>ESP32 Hava Durumu Paneli</h1>
-  <div class="grid">
-    <div class="card">
-      <div class="value" id="temp">--</div>
-      <div class="label">Sıcaklık (°C)</div>
-    </div>
-    <div class="card">
-      <div class="value" id="hum">--</div>
-      <div class="label">Nem (%)</div>
-    </div>
-    <div class="card">
-      <div class="value" id="pres">--</div>
-      <div class="label">Basınç (hPa)</div>
-    </div>
-    <div class="card">
-      <div class="value" id="yorum">--</div>
-      <div class="label">Yorum</div>
-    </div>
-  </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-  <canvas id="tempChart"></canvas>
+    const firebaseConfig = {
+      apiKey: "AIzaSyChZKRhqzrclXg_5MK-3bnEQDPkp84H8bo",
+      authDomain: "hava-c22fd.firebaseapp.com",
+      databaseURL: "https://hava-c22fd-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "hava-c22fd",
+      storageBucket: "hava-c22fd.appspot.com",
+      messagingSenderId: "289579205570",
+      appId: "1:289579205570:web:24e4f3d8df7a7d8dfb4c5b"
+    };
 
-  <script>
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const havaRef = ref(db, "/hava");
+
     const tempData = {
       labels: [],
       datasets: [{
@@ -91,46 +33,33 @@
       }]
     };
 
-    const tempChart = new Chart(
-      document.getElementById("tempChart"),
-      {
-        type: "line",
-        data: tempData,
-        options: {
-          responsive: true,
-          animation: false,
-          scales: {
-            x: {
-              display: false
-            }
-          }
-        }
+    const tempChart = new Chart(document.getElementById("tempChart"), {
+      type: "line",
+      data: tempData,
+      options: {
+        responsive: true,
+        animation: false,
+        scales: { x: { display: false } }
       }
-    );
+    });
 
-    async function fetchData() {
-      try {
-        const response = await fetch("http://192.168.0.29/data");
-        const data = await response.json();
+    onValue(havaRef, (snapshot) => {
+      const data = snapshot.val();
 
-        updateAnimatedValue("temp", data.temperature + " °C");
-        updateAnimatedValue("hum", data.humidity + " %");
-        updateAnimatedValue("pres", data.pressure + " hPa");
-        updateAnimatedValue("yorum", data.comment);
+      updateAnimatedValue("temp", data.sicaklik + " °C");
+      updateAnimatedValue("hum", data.nem + " %");
+      updateAnimatedValue("pres", data.basinc + " hPa");
+      updateAnimatedValue("yorum", data.yorum);
 
-        const timestamp = new Date().toLocaleTimeString();
-        tempData.labels.push(timestamp);
-        tempData.datasets[0].data.push(data.temperature);
-        if (tempData.labels.length > 10) {
-          tempData.labels.shift();
-          tempData.datasets[0].data.shift();
-        }
-        tempChart.update();
-
-      } catch (error) {
-        console.error("Veri alınamadı", error);
+      const time = new Date().toLocaleTimeString();
+      tempData.labels.push(time);
+      tempData.datasets[0].data.push(data.sicaklik);
+      if (tempData.labels.length > 10) {
+        tempData.labels.shift();
+        tempData.datasets[0].data.shift();
       }
-    }
+      tempChart.update();
+    });
 
     function updateAnimatedValue(id, value) {
       const el = document.getElementById(id);
@@ -140,13 +69,23 @@
         el.classList.add("show");
       }, 100);
     }
-
-    // Custom chart güncellemeleri burada başlıyor
-    setInterval(() => {
-      fetchData();
-    }, 5000);
-
-    fetchData();
   </script>
+
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; text-align: center; padding: 2rem; }
+    .card { background: #fff; border-radius: 1rem; padding: 1rem 2rem; margin: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: inline-block; min-width: 200px; }
+    .value { font-size: 2rem; font-weight: bold; opacity: 0; transition: all 0.4s ease; }
+    .value.show { opacity: 1; }
+    .label { font-size: 1rem; color: #666; }
+    canvas { margin-top: 2rem; max-width: 600px; width: 100%; }
+  </style>
+</head>
+<body>
+  <h1>ESP32 Hava Durumu Paneli</h1>
+  <div class="card"><div class="value" id="temp">--</div><div class="label">Sıcaklık (°C)</div></div>
+  <div class="card"><div class="value" id="hum">--</div><div class="label">Nem (%)</div></div>
+  <div class="card"><div class="value" id="pres">--</div><div class="label">Basınç (hPa)</div></div>
+  <div class="card"><div class="value" id="yorum">--</div><div class="label">Yorum</div></div>
+  <canvas id="tempChart"></canvas>
 </body>
 </html>
