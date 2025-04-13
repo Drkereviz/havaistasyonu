@@ -129,3 +129,15 @@ function playAlertSound() {
   const audio = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_351fbbae7d.mp3?filename=warning-1-46134.mp3");
   audio.play();
 }
+// LED durumunu değiştir (Firebase'e yazar)
+function setLED(state) {
+  const ledRef = ref(db, "/led");
+  set(ledRef, state)
+    .then(() => {
+      console.log("LED durumu güncellendi:", state);
+    })
+    .catch((error) => {
+      console.error("LED durumu güncellenemedi:", error);
+    });
+}
+
