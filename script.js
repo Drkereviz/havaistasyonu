@@ -81,3 +81,51 @@ function updateAnimatedValue(id, value) {
     el.classList.add("show");
   }, 100);
 }
+
+
+function setTimeTheme() {
+  const hour = new Date().getHours();
+  const body = document.body;
+  if (hour >= 5 && hour < 10) body.className = "morning";
+  else if (hour >= 10 && hour < 17) body.className = "day";
+  else if (hour >= 17 && hour < 20) body.className = "evening";
+  else body.className = "night";
+}
+setTimeTheme();
+
+function applyWeatherTheme(comment) {
+  const body = document.body;
+  const icon = document.getElementById("weather-icon");
+
+  let emoji = "🌤️"; // default icon
+  let theme = "day";
+
+  if (!comment) return;
+
+  if (comment.includes("Yağış")) {
+    emoji = "🌧️";
+    theme = "evening";
+    playAlertSound();
+  } else if (comment.includes("Düşük basınç")) {
+    emoji = "🌪️";
+    theme = "night";
+    playAlertSound();
+  } else if (comment.includes("Sıcak")) {
+    emoji = "🔥";
+    theme = "day";
+  } else if (comment.includes("sakin")) {
+    emoji = "🌤️";
+    theme = "morning";
+  } else {
+    emoji = "🌡️";
+    theme = "day";
+  }
+
+  if (icon) icon.innerText = emoji;
+  body.className = theme;
+}
+
+function playAlertSound() {
+  const audio = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_351fbbae7d.mp3?filename=warning-1-46134.mp3");
+  audio.play();
+}
