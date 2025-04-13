@@ -128,7 +128,7 @@ function playAlertSound() {
   audio.play();
 }
 // LED durumunu değiştir (Firebase'e yazar)
-function setLED(state) {
+window.setLED = function(state) {
   const ledRef = ref(db, "/led");
   set(ledRef, state)
     .then(() => {
@@ -137,5 +137,6 @@ function setLED(state) {
     .catch((error) => {
       console.error("LED durumu güncellenemedi:", error);
     });
+};
 }
 
