@@ -56,22 +56,19 @@ onValue(dataRef, (snapshot) => {
   const rawData = snapshot.val();
   if (!rawData) return;
 
-  const parsed = Object.entries(rawData).map(([key, value]) => value);
-  parsed.sort((a, b) => a.timestamp - b.timestamp);
-  const recent = parsed.slice(-50);  // son 50 veri
-
-  const last = recent[recent.length - 1];
-
   updateAnimatedValue("temp", rawData.sicaklik + " °C");
   updateAnimatedValue("hum", rawData.nem + " %");
   updateAnimatedValue("pres", rawData.basinc + " hPa");
   updateAnimatedValue("yorum", rawData.yorum ?? "-");
 
-  chartData.labels = recent.map(d => new Date(d.timestamp).toLocaleTimeString());
-  chartData.datasets[0].data = recent.map(d => d.temperature);
-  chartData.datasets[1].data = recent.map(d => d.humidity);
-  chartData.datasets[2].data = recent.map(d => d.pressure);
+  // Grafik güncellemesini şimdilik pas geç
+  /*
+  chartData.labels.push(new Date().toLocaleTimeString());
+  chartData.datasets[0].data.push(rawData.sicaklik);
+  chartData.datasets[1].data.push(rawData.nem);
+  chartData.datasets[2].data.push(rawData.basinc);
   chart.update();
+  */
 });
 
 function updateAnimatedValue(id, value) {
