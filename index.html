@@ -5,67 +5,8 @@
   <title>ESP32 Hava Durumu Paneli</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" src="./script.js"></script>
   <link rel="stylesheet" href="style.css" />
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #1e1e2f;
-      color: #fff;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      max-width: 800px;
-      margin: auto;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .cards {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 15px;
-    }
-    .card {
-      background: #2c2c3e;
-      border-radius: 12px;
-      padding: 20px;
-      flex: 1 1 calc(50% - 15px);
-      text-align: center;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-    }
-    .value {
-      font-size: 2em;
-      margin-bottom: 10px;
-    }
-    .label {
-      font-size: 1em;
-      opacity: 0.7;
-    }
-    #led-control {
-      margin-top: 20px;
-      text-align: center;
-    }
-    button {
-      background: #00c896;
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      margin: 5px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #00b085;
-    }
-    canvas {
-      margin-top: 40px;
-      background: #fff;
-      border-radius: 8px;
-    }
-  </style>
 </head>
 <body>
   <div class="container">
@@ -77,76 +18,13 @@
       <div class="card"><div class="value" id="yorum">--</div><div class="label">Yorum</div></div>
     </div>
 
-    <div id="led-control">
+    <!-- 🔘 LED Kontrol Butonları -->
+    <div id="led-control" style="text-align:center; margin-top: 30px;">
       <button onclick="toggleLED(true)">LED Aç</button>
       <button onclick="toggleLED(false)">LED Kapat</button>
     </div>
 
-    <canvas id="tempChart" width="400" height="150"></canvas>
+    <canvas id="tempChart"></canvas>
   </div>
-
-  <script>
-    const dbUrl = "https://hava-c22fd-default-rtdb.europe-west1.firebasedatabase.app";
-
-    async function fetchData() {
-      const res = await fetch(`${dbUrl}/hava.json`);
-      const data = await res.json();
-      if (data) {
-        document.getElementById("temp").innerText = data.sicaklik?.toFixed(1) ?? "--";
-        document.getElementById("hum").innerText = data.nem?.toFixed(1) ?? "--";
-        document.getElementById("pres").innerText = data.basinc?.toFixed(1) ?? "--";
-        document.getElementById("yorum").innerText = data.yorum ?? "--";
-
-        updateChart(data.sicaklik ?? 0);
-      }
-    }
-
-    async function toggleLED(state) {
-      await fetch(`${dbUrl}/led.json`, {
-        method: "PUT",
-        body: JSON.stringify(state)
-      });
-    }
-
-    // Sıcaklık geçmişi için grafik
-    let tempData = [];
-    const ctx = document.getElementById('tempChart').getContext('2d');
-    const tempChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Sıcaklık (°C)',
-          data: tempData,
-          fill: false,
-          borderColor: 'rgb(255, 99, 132)',
-          tension: 0.1
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: false
-          }
-        }
-      }
-    });
-
-    function updateChart(newTemp) {
-      const now = new Date().toLocaleTimeString();
-      tempChart.data.labels.push(now);
-      tempChart.data.datasets[0].data.push(newTemp);
-      if (tempChart.data.labels.length > 10) {
-        tempChart.data.labels.shift();
-        tempChart.data.datasets[0].data.shift();
-      }
-      tempChart.update();
-    }
-
-    // Veri her 5 saniyede bir yenilensin
-    setInterval(fetchData, 5000);
-    fetchData();
-  </script>
 </body>
 </html>
