@@ -5,7 +5,6 @@
   <title>ESP32 Hava Durumu Paneli</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script type="module" src="./script.js"></script>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -18,13 +17,16 @@
       <div class="card"><div class="value" id="yorum">--</div><div class="label">Yorum</div></div>
     </div>
 
-    <!-- 🔘 LED Kontrol Butonları -->
-    <div id="led-control" style="text-align:center; margin-top: 30px;">
-     <button onclick="setLED(true)">LED Aç</button>
-     <button onclick="setLED(false)">LED Kapat</button>
+    <div style="text-align:center; margin-top: 30px;">
+      <button onclick="setLED(true)">LED Aç</button>
+      <button onclick="setLED(false)">LED Kapat</button>
     </div>
 
     <canvas id="tempChart"></canvas>
+
   </div>
+
+  <!-- 📌 script.js en son çağrılıyor ve type="module" -->
+  <script type="module" src="script.js"></script>
 </body>
 </html>
