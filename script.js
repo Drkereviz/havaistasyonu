@@ -13,7 +13,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const havaRef = ref(db, "/hava");
+const dataRef = ref(db, "/data");
 
 const tempData = {
   labels: [],
@@ -34,27 +34,29 @@ const tempChart = new Chart(document.getElementById("tempChart"), {
     responsive: true,
     animation: false,
     scales: {
-      x: { display: false },
+      x: { display: true },
       y: { beginAtZero: true }
     }
   }
 });
 
-onValue(havaRef, (snapshot) => {
-  const data = snapshot.val();
+onValue(dataRef, (snapshot) => {
+  const rawData = snapshot.val();
+  if (!rawData) return;
 
-  updateAnimatedValue("temp", data.sicaklik + " °C");
-  updateAnimatedValue("hum", data.nem + " %");
-  updateAnimatedValue("pres", data.basinc + " hPa");
-  updateAnimatedValue("yorum", data.yorum);
+  const parsed = Object.entries(rawData).map(([key, value]) => value);
+  parsed.sort((a, b) => a.timestamp - b.timestamp);
+  const recent = parsed.slice(-12);  // son 12 veri
 
-  const time = new Date().toLocaleTimeString();
-  tempData.labels.push(time);
-  tempData.datasets[0].data.push(data.sicaklik);
-  if (tempData.labels.length > 12) {
-    tempData.labels.shift();
-    tempData.datasets[0].data.shift();
-  }
+  const last = recent[recent.length - 1];
+
+  updateAnimatedValue("temp", last.temperature + " °C");
+  updateAnimatedValue("hum", last.humidity + " %");
+  updateAnimatedValue("pres", last.pressure + " hPa");
+  updateAnimatedValue("yorum", last.yorum ?? "-");
+
+  tempData.labels = recent.map(d => new Date(d.timestamp).toLocaleTimeString());
+  tempData.datasets[0].data = recent.map(d => d.temperature);
   tempChart.update();
 });
 
