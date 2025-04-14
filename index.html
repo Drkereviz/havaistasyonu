@@ -5,28 +5,139 @@
   <title>ESP32 Hava Durumu Paneli</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="style.css" />
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyChZKRhqzrclXg_5MK-3bnEQDPkp84H8bo",
+      authDomain: "hava-c22fd.firebaseapp.com",
+      databaseURL: "https://hava-c22fd-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "hava-c22fd",
+      storageBucket: "hava-c22fd.appspot.com",
+      messagingSenderId: "289579205570",
+      appId: "1:289579205570:web:24e4f3d8df7a7d8dfb4c5b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const havaRef = ref(db, "/hava");
+
+    const tempData = {
+      labels: [],
+      datasets: [{
+        label: "Sıcaklık (°C)",
+        data: [],
+        fill: false,
+        borderColor: "#ff5722",
+        tension: 0.1
+      }]
+    };
+
+    const tempChart = new Chart(document.getElementById("tempChart"), {
+      type: "line",
+      data: tempData,
+      options: {
+        responsive: true,
+        animation: false,
+        scales: { x: { display: false } }
+      }
+    });
+
+    onValue(havaRef, (snapshot) => {
+      const data = snapshot.val();
+
+      updateAnimatedValue("temp", data.sicaklik + " °C");
+      updateAnimatedValue("hum", data.nem + " %");
+      updateAnimatedValue("pres", data.basinc + " hPa");
+      updateAnimatedValue("yorum", data.yorum);
+
+      const time = new Date().toLocaleTimeString();
+      tempData.labels.push(time);
+      tempData.datasets[0].data.push(data.sicaklik);
+      if (tempData.labels.length > 10) {
+        tempData.labels.shift();
+        tempData.datasets[0].data.shift();
+      }
+      tempChart.update();
+    });
+
+    function updateAnimatedValue(id, value) {
+      const el = document.getElementById(id);
+      el.classList.remove("show");
+      setTimeout(() => {
+        el.innerText = value;
+        el.classList.add("show");
+      }, 100);
+    }
+
+    // LED kontrol fonksiyonu (Firebase'e yazar)
+    window.setLED = function (state) {
+      const ledRef = ref(db, "/led");
+      set(ledRef, state)
+        .then(() => console.log("LED durumu güncellendi:", state))
+        .catch((err) => console.error("LED güncellenemedi:", err));
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      text-align: center;
+      padding: 2rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 1rem;
+      padding: 1rem 2rem;
+      margin: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      display: inline-block;
+      min-width: 200px;
+    }
+    .value {
+      font-size: 2rem;
+      font-weight: bold;
+      opacity: 0;
+      transition: all 0.4s ease;
+    }
+    .value.show {
+      opacity: 1;
+    }
+    .label {
+      font-size: 1rem;
+      color: #666;
+    }
+    canvas {
+      margin-top: 2rem;
+      max-width: 600px;
+      width: 100%;
+    }
+    .led-buttons {
+      margin-top: 2rem;
+    }
+    button {
+      margin: 0.5rem;
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>ESP32 Hava Durumu Paneli</h1>
-    <div class="cards">
-      <div class="card"><div class="value" id="temp">--</div><div class="label">Sıcaklık (°C)</div></div>
-      <div class="card"><div class="value" id="hum">--</div><div class="label">Nem (%)</div></div>
-      <div class="card"><div class="value" id="pres">--</div><div class="label">Basınç (hPa)</div></div>
-      <div class="card"><div class="value" id="yorum">--</div><div class="label">Yorum</div></div>
-    </div>
+  <h1>ESP32 Hava Durumu Paneli</h1>
 
-    <div style="text-align:center; margin-top: 30px;">
-      <button onclick="setLED(true)">LED Aç</button>
-      <button onclick="setLED(false)">LED Kapat</button>
-    </div>
+  <div class="card"><div class="value" id="temp">--</div><div class="label">Sıcaklık (°C)</div></div>
+  <div class="card"><div class="value" id="hum">--</div><div class="label">Nem (%)</div></div>
+  <div class="card"><div class="value" id="pres">--</div><div class="label">Basınç (hPa)</div></div>
+  <div class="card"><div class="value" id="yorum">--</div><div class="label">Yorum</div></div>
 
-    <canvas id="tempChart"></canvas>
-
+  <div class="led-buttons">
+    <button onclick="setLED(true)">💡 LED Aç</button>
+    <button onclick="setLED(false)">💤 LED Kapat</button>
   </div>
 
-  <!-- 📌 script.js en son çağrılıyor ve type="module" -->
-  <script type="module" src="script.js"></script>
+  <canvas id="tempChart"></canvas>
 </body>
 </html>
