@@ -132,6 +132,7 @@ window.setLED = function(state) {
     .catch((error) => {
       console.error("LED durumu güncellenemedi:", error);
     });
-};
-}
+}; // burada biter ve başka } koyma
+
+
 
