@@ -23,24 +23,46 @@
     const db = getDatabase(app);
     const havaRef = ref(db, "/hava");
 
-    const tempData = {
+    const chartData = {
       labels: [],
-      datasets: [{
-        label: "Sıcaklık (°C)",
-        data: [],
-        fill: false,
-        borderColor: "#ff5722",
-        tension: 0.1
-      }]
+      datasets: [
+        {
+          label: "Sıcaklık (°C)",
+          data: [],
+          borderColor: "#ff5722",
+          backgroundColor: "rgba(255, 87, 34, 0.1)",
+          fill: true,
+          tension: 0.3
+        },
+        {
+          label: "Nem (%)",
+          data: [],
+          borderColor: "#2196f3",
+          backgroundColor: "rgba(33, 150, 243, 0.1)",
+          fill: true,
+          tension: 0.3
+        },
+        {
+          label: "Basınç (hPa)",
+          data: [],
+          borderColor: "#4caf50",
+          backgroundColor: "rgba(76, 175, 80, 0.1)",
+          fill: true,
+          tension: 0.3
+        }
+      ]
     };
 
-    const tempChart = new Chart(document.getElementById("tempChart"), {
+    const chart = new Chart(document.getElementById("tempChart"), {
       type: "line",
-      data: tempData,
+      data: chartData,
       options: {
         responsive: true,
         animation: false,
-        scales: { x: { display: false } }
+        scales: {
+          x: { display: true },
+          y: { beginAtZero: false }
+        }
       }
     });
 
@@ -53,13 +75,18 @@
       updateAnimatedValue("yorum", data.yorum);
 
       const time = new Date().toLocaleTimeString();
-      tempData.labels.push(time);
-      tempData.datasets[0].data.push(data.sicaklik);
-      if (tempData.labels.length > 10) {
-        tempData.labels.shift();
-        tempData.datasets[0].data.shift();
+      chartData.labels.push(time);
+      chartData.datasets[0].data.push(data.sicaklik);
+      chartData.datasets[1].data.push(data.nem);
+      chartData.datasets[2].data.push(data.basinc);
+
+      // Max 10 veri göster
+      if (chartData.labels.length > 10) {
+        chartData.labels.shift();
+        chartData.datasets.forEach(ds => ds.data.shift());
       }
-      tempChart.update();
+
+      chart.update();
     });
 
     function updateAnimatedValue(id, value) {
@@ -71,7 +98,6 @@
       }, 100);
     }
 
-    // LED kontrol fonksiyonu (Firebase'e yazar)
     window.setLED = function (state) {
       const ledRef = ref(db, "/led");
       set(ledRef, state)
@@ -111,7 +137,7 @@
     }
     canvas {
       margin-top: 2rem;
-      max-width: 600px;
+      max-width: 800px;
       width: 100%;
     }
     .led-buttons {
