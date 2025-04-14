@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <title>ESP32 Hava Durumu Paneli</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
@@ -23,6 +24,21 @@
     const db = getDatabase(app);
     const havaRef = ref(db, "/hava");
 
+    const ctx = document.getElementById("tempChart").getContext("2d");
+
+    // Gradientler
+    const gradientTemp = ctx.createLinearGradient(0, 0, 0, 400);
+    gradientTemp.addColorStop(0, "rgba(255,87,34,0.5)");
+    gradientTemp.addColorStop(1, "rgba(255,87,34,0)");
+
+    const gradientHum = ctx.createLinearGradient(0, 0, 0, 400);
+    gradientHum.addColorStop(0, "rgba(33,150,243,0.5)");
+    gradientHum.addColorStop(1, "rgba(33,150,243,0)");
+
+    const gradientPres = ctx.createLinearGradient(0, 0, 0, 400);
+    gradientPres.addColorStop(0, "rgba(76,175,80,0.5)");
+    gradientPres.addColorStop(1, "rgba(76,175,80,0)");
+
     const chartData = {
       labels: [],
       datasets: [
@@ -30,38 +46,75 @@
           label: "Sıcaklık (°C)",
           data: [],
           borderColor: "#ff5722",
-          backgroundColor: "rgba(255,87,34,0.1)",
+          backgroundColor: gradientTemp,
           fill: true,
-          tension: 0.3
+          tension: 0.4,
+          pointBackgroundColor: "#ff5722",
+          pointRadius: 4
         },
         {
           label: "Nem (%)",
           data: [],
           borderColor: "#2196f3",
-          backgroundColor: "rgba(33,150,243,0.1)",
+          backgroundColor: gradientHum,
           fill: true,
-          tension: 0.3
+          tension: 0.4,
+          pointBackgroundColor: "#2196f3",
+          pointRadius: 4
         },
         {
           label: "Basınç (hPa)",
           data: [],
           borderColor: "#4caf50",
-          backgroundColor: "rgba(76,175,80,0.1)",
+          backgroundColor: gradientPres,
           fill: true,
-          tension: 0.3
+          tension: 0.4,
+          pointBackgroundColor: "#4caf50",
+          pointRadius: 4
         }
       ]
     };
 
-    const chart = new Chart(document.getElementById("tempChart"), {
+    const chart = new Chart(ctx, {
       type: "line",
       data: chartData,
       options: {
         responsive: true,
-        animation: false,
+        animation: {
+          duration: 1000,
+          easing: "easeInOutQuart"
+        },
+        interaction: {
+          mode: "index",
+          intersect: false
+        },
+        plugins: {
+          legend: {
+            display: true,
+            labels: {
+              color: "#333",
+              font: { size: 14 }
+            }
+          },
+          tooltip: {
+            backgroundColor: "#fff",
+            titleColor: "#000",
+            bodyColor: "#000",
+            borderColor: "#ccc",
+            borderWidth: 1,
+            padding: 10
+          }
+        },
         scales: {
-          x: { display: true },
-          y: { beginAtZero: false }
+          x: {
+            grid: { color: "rgba(0,0,0,0.05)" },
+            ticks: { color: "#555" }
+          },
+          y: {
+            beginAtZero: false,
+            grid: { color: "rgba(0,0,0,0.05)" },
+            ticks: { color: "#555" }
+          }
         }
       }
     });
@@ -78,8 +131,8 @@
       chartData.labels.push(time);
 
       if (data.sicaklik != null) chartData.datasets[0].data.push(data.sicaklik);
-      if (data.nem != null)       chartData.datasets[1].data.push(data.nem);
-      if (data.basinc != null)    chartData.datasets[2].data.push(data.basinc);
+      if (data.nem != null)      chartData.datasets[1].data.push(data.nem);
+      if (data.basinc != null)   chartData.datasets[2].data.push(data.basinc);
 
       if (chartData.labels.length > 10) {
         chartData.labels.shift();
@@ -145,22 +198,18 @@
       cursor: pointer;
     }
     .chart-container {
-    margin-top: 3rem;
-    padding: 1rem;
-    background: #fff;
-    border-radius: 1rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    max-width: 95vw;
-    width: 95%;
-    margin-left: auto;
-    margin-right: auto;
-}
-
+      margin-top: 3rem;
+      padding: 1.5rem;
+      background: linear-gradient(to bottom, #ffffff, #f7f7f7);
+      border-radius: 1rem;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
     canvas {
-    width: 100% !important;
-    height: 600px !important; /* 🔥 Burayı büyüttük */
-}
-
+      width: 100% !important;
+      height: 600px !important;
     }
   </style>
 </head>
