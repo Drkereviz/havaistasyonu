@@ -53,6 +53,7 @@ const chart = new Chart(document.getElementById("tempChart"), {
 });
 
 onValue(dataRef, (snapshot) => {
+  console.log("Firebase verisi geldi.");
   const rawData = snapshot.val();
   if (!rawData) return;
 
@@ -61,15 +62,9 @@ onValue(dataRef, (snapshot) => {
   updateAnimatedValue("pres", rawData.basinc + " hPa");
   updateAnimatedValue("yorum", rawData.yorum ?? "-");
 
-  // Grafik güncellemesini şimdilik pas geç
-  /*
-  chartData.labels.push(new Date().toLocaleTimeString());
-  chartData.datasets[0].data.push(rawData.sicaklik);
-  chartData.datasets[1].data.push(rawData.nem);
-  chartData.datasets[2].data.push(rawData.basinc);
-  chart.update();
-  */
+  applyWeatherTheme(rawData.yorum);
 });
+
 
 function updateAnimatedValue(id, value) {
   const el = document.getElementById(id);
