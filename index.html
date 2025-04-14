@@ -66,28 +66,30 @@
       }
     });
 
-    onValue(havaRef, (snapshot) => {
-      const data = snapshot.val();
+onValue(havaRef, (snapshot) => {
+  const data = snapshot.val();
 
-      updateAnimatedValue("temp", data.sicaklik + " °C");
-      updateAnimatedValue("hum", data.nem + " %");
-      updateAnimatedValue("pres", data.basinc + " hPa");
-      updateAnimatedValue("yorum", data.yorum);
+  updateAnimatedValue("temp", data.sicaklik + " °C");
+  updateAnimatedValue("hum", data.nem + " %");
+  updateAnimatedValue("pres", data.basinc + " hPa");
+  updateAnimatedValue("yorum", data.yorum);
 
-      const time = new Date().toLocaleTimeString();
-      chartData.labels.push(time);
-      chartData.datasets[0].data.push(data.sicaklik);
-      chartData.datasets[1].data.push(data.nem);
-      chartData.datasets[2].data.push(data.basinc);
+  const time = new Date().toLocaleTimeString();
+  chartData.labels.push(time);
 
-      // Max 10 veri göster
-      if (chartData.labels.length > 10) {
-        chartData.labels.shift();
-        chartData.datasets.forEach(ds => ds.data.shift());
-      }
+  // Her bir veriyi kontrol ederek ekle
+  if (data.sicaklik != null) chartData.datasets[0].data.push(data.sicaklik);
+  if (data.nem != null)       chartData.datasets[1].data.push(data.nem);
+  if (data.basinc != null)    chartData.datasets[2].data.push(data.basinc);
 
-      chart.update();
-    });
+  // Maksimum 10 veri göster
+  if (chartData.labels.length > 10) {
+    chartData.labels.shift();
+    chartData.datasets.forEach(ds => ds.data.shift());
+  }
+
+  chart.update();
+});
 
     function updateAnimatedValue(id, value) {
       const el = document.getElementById(id);
