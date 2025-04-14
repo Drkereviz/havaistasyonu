@@ -30,7 +30,7 @@
           label: "Sıcaklık (°C)",
           data: [],
           borderColor: "#ff5722",
-          backgroundColor: "rgba(255, 87, 34, 0.1)",
+          backgroundColor: "rgba(255,87,34,0.1)",
           fill: true,
           tension: 0.3
         },
@@ -38,7 +38,7 @@
           label: "Nem (%)",
           data: [],
           borderColor: "#2196f3",
-          backgroundColor: "rgba(33, 150, 243, 0.1)",
+          backgroundColor: "rgba(33,150,243,0.1)",
           fill: true,
           tension: 0.3
         },
@@ -46,7 +46,7 @@
           label: "Basınç (hPa)",
           data: [],
           borderColor: "#4caf50",
-          backgroundColor: "rgba(76, 175, 80, 0.1)",
+          backgroundColor: "rgba(76,175,80,0.1)",
           fill: true,
           tension: 0.3
         }
@@ -66,30 +66,28 @@
       }
     });
 
-onValue(havaRef, (snapshot) => {
-  const data = snapshot.val();
+    onValue(havaRef, (snapshot) => {
+      const data = snapshot.val();
 
-  updateAnimatedValue("temp", data.sicaklik + " °C");
-  updateAnimatedValue("hum", data.nem + " %");
-  updateAnimatedValue("pres", data.basinc + " hPa");
-  updateAnimatedValue("yorum", data.yorum);
+      updateAnimatedValue("temp", data.sicaklik + " °C");
+      updateAnimatedValue("hum", data.nem + " %");
+      updateAnimatedValue("pres", data.basinc + " hPa");
+      updateAnimatedValue("yorum", data.yorum);
 
-  const time = new Date().toLocaleTimeString();
-  chartData.labels.push(time);
+      const time = new Date().toLocaleTimeString();
+      chartData.labels.push(time);
 
-  // Her bir veriyi kontrol ederek ekle
-  if (data.sicaklik != null) chartData.datasets[0].data.push(data.sicaklik);
-  if (data.nem != null)       chartData.datasets[1].data.push(data.nem);
-  if (data.basinc != null)    chartData.datasets[2].data.push(data.basinc);
+      if (data.sicaklik != null) chartData.datasets[0].data.push(data.sicaklik);
+      if (data.nem != null)       chartData.datasets[1].data.push(data.nem);
+      if (data.basinc != null)    chartData.datasets[2].data.push(data.basinc);
 
-  // Maksimum 10 veri göster
-  if (chartData.labels.length > 10) {
-    chartData.labels.shift();
-    chartData.datasets.forEach(ds => ds.data.shift());
-  }
+      if (chartData.labels.length > 10) {
+        chartData.labels.shift();
+        chartData.datasets.forEach(ds => ds.data.shift());
+      }
 
-  chart.update();
-});
+      chart.update();
+    });
 
     function updateAnimatedValue(id, value) {
       const el = document.getElementById(id);
@@ -137,11 +135,6 @@ onValue(havaRef, (snapshot) => {
       font-size: 1rem;
       color: #666;
     }
-    canvas {
-      margin-top: 2rem;
-      max-width: 800px;
-      width: 100%;
-    }
     .led-buttons {
       margin-top: 2rem;
     }
@@ -150,6 +143,21 @@ onValue(havaRef, (snapshot) => {
       padding: 10px 20px;
       font-size: 1rem;
       cursor: pointer;
+    }
+    .chart-container {
+      margin-top: 3rem;
+      padding: 1rem;
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 400px !important;
     }
   </style>
 </head>
@@ -166,6 +174,8 @@ onValue(havaRef, (snapshot) => {
     <button onclick="setLED(false)">💤 LED Kapat</button>
   </div>
 
-  <canvas id="tempChart"></canvas>
+  <div class="chart-container">
+    <canvas id="tempChart"></canvas>
+  </div>
 </body>
 </html>
